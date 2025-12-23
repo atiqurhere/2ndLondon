@@ -1,18 +1,31 @@
 -- Migration 009: Storage Bucket Policies for Post Attachments
 
--- Note: Run this after creating the 'post_attachments' bucket in Supabase Dashboard
+-- ============================================
+-- IMPORTANT: PREREQUISITES
+-- ============================================
+-- Before running this migration:
+-- 1. Go to Supabase Dashboard → Storage
+-- 2. Create new bucket: 'post_attachments'
+-- 3. Set as PUBLIC bucket
+-- 4. Then run this SQL
 
--- Enable RLS on storage.objects
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- Note: storage.objects already has RLS enabled by Supabase
+-- We just need to add our custom policies
+
+-- ============================================
+-- STORAGE POLICIES
+-- ============================================
 
 -- Public read access for post attachments (shareable posts)
 CREATE POLICY "Public read access to post attachments"
 ON storage.objects FOR SELECT
+TO public
 USING (bucket_id = 'post_attachments');
 
 -- Authenticated users can upload to their own folder
 CREATE POLICY "Authenticated users can upload post attachments"
 ON storage.objects FOR INSERT
+TO authenticated
 WITH CHECK (
     bucket_id = 'post_attachments' 
     AND auth.role() = 'authenticated'
@@ -22,6 +35,7 @@ WITH CHECK (
 -- Users can update their own files
 CREATE POLICY "Users can update own post attachments"
 ON storage.objects FOR UPDATE
+TO authenticated
 USING (
     bucket_id = 'post_attachments'
     AND (storage.foldername(name))[1] = auth.uid()::text
@@ -30,17 +44,8 @@ USING (
 -- Users can delete their own files
 CREATE POLICY "Users can delete own post attachments"
 ON storage.objects FOR DELETE
+TO authenticated
 USING (
     bucket_id = 'post_attachments'
     AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
--- ============================================
--- INSTRUCTIONS
--- ============================================
-
--- 1. Go to Supabase Dashboard → Storage
--- 2. Create new bucket: 'post_attachments'
--- 3. Set as PUBLIC bucket
--- 4. Run this SQL in SQL Editor
--- 5. Test upload with path: {userId}/{postId}/{filename}
