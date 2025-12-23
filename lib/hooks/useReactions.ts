@@ -18,8 +18,8 @@ export function useAddReaction() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase
-                .from('post_reactions')
+            const { error } = await (supabase
+                .from('post_reactions') as any)
                 .insert({
                     post_id: postId,
                     user_id: user.user.id,
@@ -83,8 +83,8 @@ export function useUpdateReaction() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase
-                .from('post_reactions')
+            const { error } = await (supabase
+                .from('post_reactions') as any)
                 .update({ reaction_type: reactionType })
                 .eq('post_id', postId)
                 .eq('user_id', user.user.id)
@@ -106,8 +106,8 @@ export function useRemoveReaction() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase
-                .from('post_reactions')
+            const { error } = await (supabase
+                .from('post_reactions') as any)
                 .delete()
                 .eq('post_id', postId)
                 .eq('user_id', user.user.id)
