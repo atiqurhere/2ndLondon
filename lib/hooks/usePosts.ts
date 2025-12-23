@@ -14,7 +14,7 @@ export function useFeed() {
     return useInfiniteQuery({
         queryKey: ['feed'],
         queryFn: async ({ pageParam = 0 }) => {
-            const { data, error } = await supabase.rpc('get_feed_posts', {
+            const { data, error } = await (supabase.rpc as any)('get_feed_posts', {
                 page_size: 20,
                 page_offset: pageParam,
             })
@@ -34,7 +34,7 @@ export function useUserPosts(userId: string) {
     return useInfiniteQuery({
         queryKey: ['user-posts', userId],
         queryFn: async ({ pageParam = 0 }) => {
-            const { data, error } = await supabase.rpc('get_user_posts', {
+            const { data, error } = await (supabase.rpc as any)('get_user_posts', {
                 target_user_id: userId,
                 page_size: 20,
                 page_offset: pageParam,
@@ -56,7 +56,7 @@ export function usePost(postId: string) {
     return useQuery({
         queryKey: ['post', postId],
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('get_post_detail', {
+            const { data, error } = await (supabase.rpc as any)('get_post_detail', {
                 post_id: postId,
             })
 
@@ -71,8 +71,8 @@ export function usePostAttachments(postId: string) {
     return useQuery({
         queryKey: ['post-attachments', postId],
         queryFn: async () => {
-            const { data, error } = await supabase
-                .from('post_attachments')
+            const { data, error } = await (supabase
+                .from('post_attachments') as any)
                 .select('*')
                 .eq('post_id', postId)
                 .order('created_at', { ascending: true })
@@ -96,8 +96,8 @@ export function useCreatePost() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { data, error } = await supabase
-                .from('posts')
+            const { data, error } = await (supabase
+                .from('posts') as any)
                 .insert({
                     author_id: user.user.id,
                     ...input,
@@ -120,8 +120,8 @@ export function useUpdatePost(postId: string) {
 
     return useMutation({
         mutationFn: async (input: UpdatePostInput) => {
-            const { data, error } = await supabase
-                .from('posts')
+            const { data, error } = await (supabase
+                .from('posts') as any)
                 .update(input)
                 .eq('id', postId)
                 .select()
@@ -144,8 +144,8 @@ export function useDeletePost() {
     return useMutation({
         mutationFn: async (postId: string) => {
             // Soft delete
-            const { error } = await supabase
-                .from('posts')
+            const { error } = await (supabase
+                .from('posts') as any)
                 .update({ is_deleted: true })
                 .eq('id', postId)
 
@@ -187,8 +187,8 @@ export function useUploadAttachment() {
                 .getPublicUrl(filePath)
 
             // Create attachment record
-            const { data, error } = await supabase
-                .from('post_attachments')
+            const { data, error } = await (supabase
+                .from('post_attachments') as any)
                 .insert({
                     post_id: postId,
                     uploader_id: user.user.id,
@@ -222,8 +222,8 @@ export function useDeleteAttachment() {
             if (storageError) throw storageError
 
             // Delete record
-            const { error } = await supabase
-                .from('post_attachments')
+            const { error } = await (supabase
+                .from('post_attachments') as any)
                 .delete()
                 .eq('id', attachmentId)
 
@@ -246,8 +246,8 @@ export function useSavedPosts() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { data, error } = await supabase
-                .from('post_saves')
+            const { data, error } = await (supabase
+                .from('post_saves') as any)
                 .select(`
                     post_id,
                     created_at,
@@ -270,8 +270,8 @@ export function useSavePost() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase
-                .from('post_saves')
+            const { error } = await (supabase
+                .from('post_saves') as any)
                 .insert({
                     user_id: user.user.id,
                     post_id: postId,
@@ -295,8 +295,8 @@ export function useUnsavePost() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase
-                .from('post_saves')
+            const { error } = await (supabase
+                .from('post_saves') as any)
                 .delete()
                 .eq('user_id', user.user.id)
                 .eq('post_id', postId)
