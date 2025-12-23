@@ -1,0 +1,139 @@
+You are a senior product designer and frontend engineer.
+
+Design a full web application UI for a social-media–style platform called
+“Second London”.
+
+DESIGN REFERENCE (MANDATORY)
+Use BeReal as the primary design inspiration.
+The UI must feel:
+- feed-first
+- minimal
+- urgent
+- human
+- authentic
+No flashy effects, no influencer-style UI, no vanity metrics.
+
+PRODUCT IDEA (CONTEXT)
+Second London is a micro-opportunity social network for London.
+Users post short-lived “Moments” (needs, offers, free items, skill swaps).
+Moments expire in 2–12 hours.
+Other users apply.
+Creator accepts.
+Only then does chat unlock.
+Trust and safety matter more than engagement metrics.
+
+DESIGN PRINCIPLES
+- Mobile-first
+- Dark-first UI
+- No map-first experience
+- No follower counts, likes, or reposts
+- Time and urgency must always be visible
+- Clean cards, fast scanning, low cognitive load
+
+COLOR SYSTEM
+- Background: #0B0B0F
+- Card surface: #15151C
+- Primary text: #FFFFFF
+- Muted text: #A1A1AA
+- Success / Verified: #22C55E
+- Warning / Ending soon: #F97316
+- Danger / Report: #EF4444
+No gradients. No neon colors.
+
+TYPOGRAPHY
+- Font: Inter (system-ui fallback)
+- Title: 20–22px semibold
+- Card title: 16px medium
+- Body text: 14px
+- Meta text (time, distance): 12px
+Hierarchy is more important than decoration.
+
+APP LAYOUT
+App shell:
+- Top bar with app name + profile avatar
+- Bottom navigation (mobile):
+  - Feed
+  - Ending Soon
+  - Create
+  - Inbox
+  - Profile
+
+Desktop:
+- Left sidebar navigation
+- Center feed column
+- Optional right column for filters
+
+FEED CARD DESIGN (CORE COMPONENT)
+Each Moment card must include:
+- Title (clear, short)
+- Expiry countdown (e.g. “Ends in 42m”) — ALWAYS visible
+- Approximate area (e.g. “Near Stratford”)
+- Distance band (e.g. “<1 mi”, “1–2 mi”)
+- Short description (max 2–3 lines)
+- Reward label (£, Free, Swap, None)
+- Trust badge (Level X, Verified if applicable)
+- Primary action: Apply
+
+Card rules:
+- Rounded corners: 12px
+- Padding: 16px
+- Compact height
+- No shadows or very subtle shadow
+- Designed for fast scrolling
+
+CREATE MOMENT FLOW
+5-step vertical wizard:
+1. Type: Need / Offer / Free / Swap
+2. Title + description
+3. Reward (cash / free / swap / none)
+4. Area label + radius (text only, no map)
+5. Expiry (2h / 4h / 8h / 12h) + Quiet Mode toggle
+
+Use dot-based progress indicators.
+Single-column, thumb-friendly.
+
+QUIET MODE
+- Applicants can only send a short template message (max 240 chars)
+- No chat access before acceptance
+- Full chat unlocks only after acceptance
+
+CHAT UI
+- Dark background
+- Flat message blocks (no speech bubbles)
+- Timestamps below messages
+- System safety banner at top:
+  “Meet in public places. Stay safe.”
+No reactions, no typing indicators, no emojis spam.
+
+PROFILE PAGE
+- Avatar
+- Display name
+- Trust level badge (Level 0–5)
+- Star rating
+- Verified badge (if any)
+
+Tabs:
+- Moments created
+- Completed moments
+- Reviews
+
+No followers. No likes. No social vanity metrics.
+
+INTERACTIONS & MOTION
+- Subtle fade-ins (100–150ms)
+- Simple button press feedback
+- No parallax
+- No complex animations
+
+FINAL GOAL
+Produce a BeReal-style, feed-driven social UI
+that feels fast, real, trustworthy, and built for
+short-lived local interactions — not content creation.
+
+Generate:
+- Feed screen
+- Moment card component
+- Create Moment flow
+- Chat screen
+- Profile screen
+All consistent with the above rules.

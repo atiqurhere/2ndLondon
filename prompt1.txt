@@ -1,0 +1,285 @@
+You are a senior full-stack engineer. Generate a complete, production-ready web application called “Second London” (London micro-opportunity network) using:
+
+- Frontend: Next.js 14+ (App Router) + TypeScript + Tailwind CSS
+- Backend: Supabase (Auth, Postgres, RLS, Realtime, Storage, Edge Functions)
+- State: React Query (TanStack Query) for server cache + mutations
+- Forms: React Hook Form + Zod validation
+- UI: clean modern design, mobile-first, no heavy map UI
+- Deployment: Vercel + Supabase
+
+GOAL
+Build a feed-based, time-based micro-opportunity network for London. Users can post “Moments” (needs/offers/free/swap) that expire quickly (2–12 hours). Others can apply. Creator accepts. Then secure chat opens. Completion enables reviews/ratings. Safety and anti-spam are core.
+
+DELIVERABLES REQUIRED
+1) Full repository file tree, with all files and code.
+2) Supabase SQL migration scripts (schema + RLS + triggers + views + indexes).
+3) Supabase Edge Functions code + instructions to deploy them.
+4) README with setup steps (Supabase env vars, migrations, local dev, deploy).
+5) Seed script with sample data.
+
+KEY PRODUCT DIFFERENTIATORS
+- No “map app” vibe. Do NOT build a map-first experience.
+- “Ending Soon” feed: sort by minutes remaining.
+- “Quiet Mode”: applicants can only send a short template message; full chat unlocks only after acceptance.
+- Privacy-safe location: show approximate area label + distance band; do not expose exact coordinates.
+- Trust levels (0–5), verified badge, and anti-spam rate limits.
+
+PAGES / ROUTES (NEXT.JS APP ROUTER)
+- / (Landing page, marketing + CTA)
+- /auth (Sign in / Sign up: email + magic link + optional phone OTP if supported by Supabase)
+- /onboarding (interests/tags, home area label, optional location permission)
+- /app (Main app shell with tabs)
+  - /app/feed (Nearby)
+  - /app/ending-soon (Ending soon)
+  - /app/verified (Verified-only)
+  - /app/free (Free stuff)
+  - /app/swaps (Skill swaps)
+- /app/moments/new (Create Moment wizard: 4–5 steps)
+- /app/moments/[id] (Moment detail, apply, report)
+- /app/inbox (Conversation list)
+- /app/inbox/[id] (Chat page, realtime)
+- /app/profile (My profile, verification, history)
+- /app/safety (Safety center)
+- /app/admin (Admin dashboard: reports review + moderation) – behind admin role
+
+DATA MODEL (POSTGRES TABLES)
+Use UUID primary keys. Use auth.users for identity, profiles table for public data.
+
+Tables:
+1) profiles
+- id uuid pk references auth.users(id) on delete cascade
+- display_name text not null
+- avatar_url text
+- home_area text not null
+- lat double precision (private)
+- lng double precision (private)
+- trust_level int not null default 0
+- rating_avg numeric not null default 0
+- rating_count int not null default 0
+- is_verified boolean not null default false
+- created_at timestamptz default now()
+
+2) moments
+- id uuid pk default gen_random_uuid()
+- creator_id uuid references profiles(id) on delete cascade
+- type text check in ('need','offer','free','swap')
+- title text not null
+- description text not null
+- category text not null
+- tags text[] not null default '{}'
+- reward_type text check in ('cash','swap','free','none') not null
+- reward_amount numeric null
+- currency text not null default 'GBP'
+- approx_area text not null (public label like “Near Stratford”)
+- lat double precision (private)
+- lng double precision (private)
+- radius_m int not null default 1500
+- expires_at timestamptz not null
+- status text not null default 'active' check in ('active','matched','expired','cancelled')
+- requires_verified boolean not null default false
+- quiet_mode boolean not null default true
+- created_at timestamptz default now()
+
+3) applications
+- id uuid pk default gen_random_uuid()
+- moment_id uuid references moments(id) on delete cascade
+- applicant_id uuid references profiles(id) on delete cascade
+- message text not null (short template, max 240 chars)
+- status text not null default 'pending' check in ('pending','accepted','rejected','cancelled')
+- created_at timestamptz default now()
+Unique constraint: (moment_id, applicant_id) unique.
+
+4) conversations
+- id uuid pk default gen_random_uuid()
+- moment_id uuid references moments(id) on delete cascade
+- creator_id uuid references profiles(id) on delete cascade
+- other_id uuid references profiles(id) on delete cascade
+- status text not null default 'open' check in ('open','closed')
+- created_at timestamptz default now()
+Unique constraint: (moment_id, creator_id, other_id) unique.
+
+5) messages
+- id uuid pk default gen_random_uuid()
+- conversation_id uuid references conversations(id) on delete cascade
+- sender_id uuid references profiles(id) on delete cascade
+- body text not null (max 2000)
+- created_at timestamptz default now()
+
+6) reviews
+- id uuid pk default gen_random_uuid()
+- moment_id uuid references moments(id) on delete cascade
+- from_id uuid references profiles(id) on delete cascade
+- to_id uuid references profiles(id) on delete cascade
+- rating int not null check between 1 and 5
+- note text
+- created_at timestamptz default now()
+Unique constraint: (moment_id, from_id, to_id) unique.
+
+7) reports
+- id uuid pk default gen_random_uuid()
+- reporter_id uuid references profiles(id) on delete cascade
+- target_type text not null check in ('moment','user','message')
+- target_id uuid not null
+- reason text not null
+- details text
+- status text not null default 'open' check in ('open','reviewing','resolved','rejected')
+- created_at timestamptz default now()
+
+8) notifications
+- id uuid pk default gen_random_uuid()
+- user_id uuid references profiles(id) on delete cascade
+- type text not null (e.g. 'application_received','application_accepted','message','moment_expiring','report_update')
+- title text not null
+- body text not null
+- link text
+- read boolean not null default false
+- created_at timestamptz default now()
+
+9) roles
+- user_id uuid pk references profiles(id) on delete cascade
+- role text not null check in ('user','admin') default 'user'
+
+POSTGIS / LOCATION
+Enable PostGIS. Store lat/lng in profiles and moments, but DO NOT expose lat/lng to other users.
+Use server-side proximity with ST_DWithin.
+However, the UI must not show map pins; just show distance band like:
+- “< 1 mi”, “1–2 mi”, “2–3 mi”, “3+ mi”
+Compute this from user location to moment location on the server (RPC).
+
+SECURITY (RLS) REQUIREMENTS
+Implement Row Level Security for all tables:
+- profiles: everyone can read limited public profile fields. Only owner can update their profile.
+- moments: everyone can read safe/public data via a VIEW. Only creator can update/cancel their moments.
+- applications: applicant can read/create their own; moment creator can read applications for their moments; only creator can accept/reject; applicant can cancel pending.
+- conversations/messages: only participants can read/write.
+- reviews: only participants of the completed moment can write; no edits after insert.
+- reports: reporter can create and read their own; admins can read all.
+- notifications: only owner can read/update read status.
+- roles: only admins can view all; user can view own role.
+
+IMPORTANT: create a public view `public_moments` that excludes private fields (lat/lng).
+Frontend must query `public_moments` NOT `moments` directly.
+Same for `public_profiles` view (exclude lat/lng).
+
+TRIGGERS / FUNCTIONS
+1) On auth user created -> create profiles row with defaults (requires display_name from metadata or fallback).
+2) On review insert -> update rating_avg and rating_count for target profile.
+3) On application accepted -> create conversation, set moment status to matched (or keep active if multi-match is allowed; for MVP use single match).
+4) Notifications:
+- when application created -> notify moment creator
+- when application accepted -> notify applicant
+- when new message -> notify other party (in-app only for MVP)
+
+EXPIRY AUTOMATION
+Implement an Edge Function scheduled via Supabase Cron:
+- runs every 5 minutes
+- marks moments as expired when expires_at < now() AND status='active'
+- closes pending applications for expired moments
+- optionally creates notifications to creators (“Your moment expired”)
+
+ANTI-SPAM / RATE LIMITS
+Implement basic throttling:
+- New users trust_level 0 can create max 3 moments per hour.
+- Max 10 applications per hour per user.
+- Implement using a `user_actions` table or using Postgres function checks.
+Prefer a Postgres function `can_create_moment(user_id)` and `can_apply(user_id)` with logs.
+
+QUIET MODE
+- applications.message limited to 240 chars.
+- chat is locked until application status becomes accepted and conversation exists.
+- Applicants cannot message creator before acceptance.
+
+FEED / MATCHING
+Create an RPC function `get_feed(user_lat, user_lng, mode, limit, offset, verified_only)` that returns:
+- moment id, title, reward, approx_area, minutes_remaining, trust badge, distance_band, tags, requires_verified, quiet_mode
+Modes:
+- 'nearby' (distance asc, then expires)
+- 'ending_soon' (expires_at asc)
+- 'free' (reward_type='free')
+- 'swaps' (type='swap' OR reward_type='swap')
+- 'verified' (requires_verified OR creator is_verified)
+Filtering:
+- status='active' and expires_at > now()
+Distance:
+- use ST_DWithin with moment.radius_m (or user-config radius)
+Distance band computed with ST_Distance.
+
+FRONTEND UI REQUIREMENTS
+- App shell with bottom nav on mobile, sidebar on desktop
+- Feed cards with:
+  - title
+  - reward label (e.g. “£25”, “Free”, “Swap”, “No reward”)
+  - approx area
+  - distance band
+  - “Ending in 42m”
+  - creator trust badge (Level X, Verified)
+- Create Moment wizard:
+  - Step 1: type + category
+  - Step 2: title + description
+  - Step 3: reward
+  - Step 4: location privacy (approx_area) + radius
+  - Step 5: expiry (2/4/8/12 hours) + quiet mode toggle
+- Moment detail:
+  - apply button (disabled if requires_verified and user not verified)
+  - report button
+  - show applicant list only to creator
+- Inbox:
+  - conversation list sorted by last message time
+- Chat:
+  - realtime messages with optimistic UI
+  - show system banner: “Be safe. Meet in public places.”
+- Profile:
+  - edit display name, avatar, interests, home area
+  - show trust level, rating
+  - show history: moments created, accepted, completed
+- Safety center:
+  - policies, how to report, emergency advice, meet-up tips
+
+TECH IMPLEMENTATION NOTES
+- Use Supabase JS client with Next.js. Use server actions for secure mutations when appropriate.
+- Use middleware to protect /app routes (must be authenticated).
+- Use environment variables:
+  - NEXT_PUBLIC_SUPABASE_URL
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY
+  - SUPABASE_SERVICE_ROLE_KEY (server-only for admin/edge tasks)
+- For storage: user avatars in Supabase Storage bucket `avatars` with public read; RLS to allow users to upload to their own folder.
+
+REALTIME
+- Realtime subscriptions for:
+  - messages in a conversation
+  - applications status changes for a user
+  - notifications for a user
+
+ADMIN PANEL
+- Admin can view reports, mark status, and optionally disable a moment (set status=cancelled).
+- Admin role defined in roles table; enforce RLS.
+
+TESTING
+- Include basic unit tests for key utilities.
+- Include e2e smoke test steps in README (manual ok).
+
+README MUST INCLUDE
+- Setup Supabase project
+- Run SQL migrations
+- Configure auth providers
+- Configure cron job for expiry edge function
+- Run locally (npm install, npm run dev)
+- Deploy to Vercel
+
+OUTPUT FORMAT
+Produce:
+1) A full file tree
+2) Then each file with its path and contents
+3) SQL migrations in /supabase/migrations
+4) Edge functions under /supabase/functions
+5) A complete README.md
+No placeholders like “TODO: implement”. Everything must compile and run.
+
+IMPORTANT CONSTRAINTS
+- No map UI.
+- Do not leak lat/lng in client queries. Use views and RPC.
+- Enforce RLS; security first.
+- Mobile-first UX.
+- Use clean, modern styling.
+
+Now generate the complete project.
