@@ -332,6 +332,7 @@ export default function CreateMomentPage() {
                     ) : (
                         <button
                             type="submit"
+                            onClick={() => console.log('Create button clicked, isPending:', createMoment.isPending)}
                             disabled={createMoment.isPending}
                             className="flex-1 px-4 py-3 bg-primary text-background rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
                         >

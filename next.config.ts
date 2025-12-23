@@ -6,15 +6,30 @@ const nextConfig: NextConfig = {
         remotePatterns: [
             {
                 protocol: 'https',
-                hostname: '*.supabase.co',
-                pathname: '/storage/v1/object/public/**',
+                hostname: '**.supabase.co',
+            },
+            {
+                protocol: 'https',
+                hostname: 'lh3.googleusercontent.com',
+            },
+            {
+                protocol: 'https',
+                hostname: '**.googleusercontent.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'graph.microsoft.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'media.licdn.com',
             },
         ],
     },
     // Suppress hydration warnings caused by browser extensions
     onDemandEntries: {
-        maxInactiveAge: 25 * 1000,
-        pagesBufferLength: 2,
+        maxInactiveAge: 60 * 1000,
+        pagesBufferLength: 5,
     },
 };
 
