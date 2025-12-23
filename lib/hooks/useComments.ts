@@ -15,8 +15,8 @@ export function useComments(postId: string) {
     return useQuery({
         queryKey: ['comments', postId],
         queryFn: async () => {
-            const { data, error } = await supabase
-                .from('comments')
+            const { data, error } = await (supabase
+                .from('comments') as any)
                 .select(`
                     *,
                     profiles!comments_author_id_fkey(
@@ -71,8 +71,8 @@ export function useRealtimeComments(postId: string) {
                 },
                 async (payload) => {
                     // Fetch full comment with profile data
-                    const { data } = await supabase
-                        .from('comments')
+                    const { data } = await (supabase
+                        .from('comments') as any)
                         .select(`
                             *,
                             profiles!comments_author_id_fkey(
@@ -166,8 +166,8 @@ export function useCreateComment() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { data, error } = await supabase
-                .from('comments')
+            const { data, error } = await (supabase
+                .from('comments') as any)
                 .insert({
                     post_id: input.post_id,
                     author_id: user.user.id,
@@ -192,8 +192,8 @@ export function useUpdateComment(commentId: string) {
 
     return useMutation({
         mutationFn: async (input: UpdateCommentInput) => {
-            const { data, error } = await supabase
-                .from('comments')
+            const { data, error } = await (supabase
+                .from('comments') as any)
                 .update(input)
                 .eq('id', commentId)
                 .select()
@@ -214,8 +214,8 @@ export function useDeleteComment() {
     return useMutation({
         mutationFn: async (commentId: string) => {
             // Soft delete
-            const { data, error } = await supabase
-                .from('comments')
+            const { data, error } = await (supabase
+                .from('comments') as any)
                 .update({ is_deleted: true })
                 .eq('id', commentId)
                 .select('post_id')
