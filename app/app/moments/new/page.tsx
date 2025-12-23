@@ -65,9 +65,15 @@ export default function CreateMomentPage() {
     const watchTags = watch('tags')
 
     const onSubmit = async (data: MomentForm) => {
+        console.log('Form submitted:', data)
         try {
             const expiresAt = new Date()
             expiresAt.setHours(expiresAt.getHours() + data.expires_in_hours)
+
+            console.log('Creating moment with data:', {
+                ...data,
+                expires_at: expiresAt.toISOString(),
+            })
 
             await createMoment.mutateAsync({
                 ...data,
@@ -78,8 +84,10 @@ export default function CreateMomentPage() {
                 radius_m: 1500,
             })
 
+            console.log('Moment created successfully')
             router.push('/app/feed')
         } catch (error: any) {
+            console.error('Create moment error:', error)
             alert(error.message || 'Failed to create moment')
         }
     }
@@ -114,8 +122,8 @@ export default function CreateMomentPage() {
                                     type="button"
                                     onClick={() => setValue('type', type)}
                                     className={`p-6 rounded-lg border-2 transition-all ${watchType === type
-                                            ? 'border-primary bg-primary bg-opacity-10'
-                                            : 'border-border hover:border-muted'
+                                        ? 'border-primary bg-primary bg-opacity-10'
+                                        : 'border-border hover:border-muted'
                                         }`}
                                 >
                                     <div className="text-3xl mb-2">
@@ -194,8 +202,8 @@ export default function CreateMomentPage() {
                                     type="button"
                                     onClick={() => setValue('reward_type', type)}
                                     className={`p-4 rounded-lg border-2 transition-all ${watchRewardType === type
-                                            ? 'border-primary bg-primary bg-opacity-10'
-                                            : 'border-border hover:border-muted'
+                                        ? 'border-primary bg-primary bg-opacity-10'
+                                        : 'border-border hover:border-muted'
                                         }`}
                                 >
                                     <div className="font-semibold capitalize">{type}</div>
@@ -259,8 +267,8 @@ export default function CreateMomentPage() {
                                         type="button"
                                         onClick={() => setValue('expires_in_hours', hours)}
                                         className={`p-3 rounded-lg border-2 transition-all ${watch('expires_in_hours') === hours
-                                                ? 'border-primary bg-primary bg-opacity-10'
-                                                : 'border-border hover:border-muted'
+                                            ? 'border-primary bg-primary bg-opacity-10'
+                                            : 'border-border hover:border-muted'
                                             }`}
                                     >
                                         {hours}h
