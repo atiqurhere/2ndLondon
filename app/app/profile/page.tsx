@@ -24,10 +24,12 @@ export default function ProfilePage() {
     const { data: profile, isLoading } = useQuery({
         queryKey: ['profile', user?.id],
         queryFn: async () => {
+            if (!user?.id) throw new Error('No user ID')
+
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', user?.id)
+                .eq('id', user.id)
                 .single()
 
             if (error) throw error
@@ -43,7 +45,7 @@ export default function ProfilePage() {
 
             return data as any
         },
-        enabled: !!user,
+        enabled: !!user?.id,
     })
 
     const updateProfileMutation = useMutation({
