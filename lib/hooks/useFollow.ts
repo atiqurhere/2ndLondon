@@ -14,7 +14,7 @@ export function useIsFollowing(userId: string) {
     return useQuery({
         queryKey: ['is-following', userId],
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('is_following', {
+            const { data, error } = await (supabase.rpc as any)('is_following', {
                 target_user_id: userId,
             })
 
@@ -79,7 +79,7 @@ export function useFollowUser() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase.from('follows').insert({
+            const { error } = await (supabase.from('follows') as any).insert({
                 follower_id: user.user.id,
                 following_id: userId,
             })
