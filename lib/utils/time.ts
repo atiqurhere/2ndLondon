@@ -1,10 +1,18 @@
-import { formatDistanceToNow, differenceInMinutes, format } from 'date-fns'
+import { formatDistanceToNow, differenceInMinutes, format, isValid } from 'date-fns'
 
-export function getMinutesRemaining(expiresAt: string): number {
-    return differenceInMinutes(new Date(expiresAt), new Date())
+export function getMinutesRemaining(expiresAt: string | null | undefined): number {
+    if (!expiresAt) return -1
+    const date = new Date(expiresAt)
+    if (!isValid(date)) return -1
+    return differenceInMinutes(date, new Date())
 }
 
-export function formatTimeRemaining(expiresAt: string): string {
+export function formatTimeRemaining(expiresAt: string | null | undefined): string {
+    if (!expiresAt) return 'No expiry'
+
+    const date = new Date(expiresAt)
+    if (!isValid(date)) return 'Invalid date'
+
     const minutes = getMinutesRemaining(expiresAt)
 
     if (minutes < 0) {
@@ -22,11 +30,15 @@ export function formatTimeRemaining(expiresAt: string): string {
         return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
     }
 
-    return formatDistanceToNow(new Date(expiresAt), { addSuffix: true })
+    return formatDistanceToNow(date, { addSuffix: true })
 }
 
-export function formatMessageTime(timestamp: string): string {
+export function formatMessageTime(timestamp: string | null | undefined): string {
+    if (!timestamp) return 'Unknown'
+
     const date = new Date(timestamp)
+    if (!isValid(date)) return 'Invalid date'
+
     const now = new Date()
     const diffInMinutes = differenceInMinutes(now, date)
 
