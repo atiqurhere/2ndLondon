@@ -70,13 +70,16 @@ export default function CreateMomentPage() {
             const expiresAt = new Date()
             expiresAt.setHours(expiresAt.getHours() + data.expires_in_hours)
 
+            // Remove expires_in_hours from data as it's not a database column
+            const { expires_in_hours, ...momentData } = data
+
             console.log('Creating moment with data:', {
-                ...data,
+                ...momentData,
                 expires_at: expiresAt.toISOString(),
             })
 
             await createMoment.mutateAsync({
-                ...data,
+                ...momentData,
                 expires_at: expiresAt.toISOString(),
                 // In a real app, you'd get actual coordinates from geocoding or user location
                 lat: 51.5074, // London default
