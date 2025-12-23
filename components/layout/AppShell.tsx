@@ -3,15 +3,21 @@
 import { Sidebar } from './Sidebar'
 import { BottomNav } from './BottomNav'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+    const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+
     return (
         <div className="min-h-screen bg-background">
             {/* Desktop Sidebar - Fixed */}
-            <Sidebar />
+            <Sidebar isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} />
 
-            {/* Main Content - With margin for sidebar */}
-            <div className="md:ml-64 flex flex-col min-h-screen transition-all duration-300">
+            {/* Main Content - Responsive to sidebar state */}
+            <div
+                className="flex flex-col min-h-screen transition-all duration-300"
+                style={{ marginLeft: isSidebarExpanded ? '256px' : '80px' }}
+            >
                 {/* Top Bar */}
                 <header className="h-16 border-b border-border bg-surface/50 backdrop-blur-sm flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
                     <div className="flex items-center gap-3 md:hidden">

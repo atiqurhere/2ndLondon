@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/helpers'
-import { useState } from 'react'
 
 const navItems = [
     { href: '/app/feed', label: 'Nearby', icon: '📍' },
@@ -16,9 +15,13 @@ const navItems = [
     { href: '/app/safety', label: 'Safety', icon: '🛡️' },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+    isExpanded: boolean
+    setIsExpanded: (expanded: boolean) => void
+}
+
+export function Sidebar({ isExpanded, setIsExpanded }: SidebarProps) {
     const pathname = usePathname()
-    const [isExpanded, setIsExpanded] = useState(true)
 
     return (
         <aside
