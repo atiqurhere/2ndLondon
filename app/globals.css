@@ -13,7 +13,8 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background antialiased;
+    color: rgb(250, 250, 250);
     overflow-x: hidden;
   }
 }
