@@ -106,6 +106,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                 </Link>
 
                                 <Link
+                                    href="/app/saved"
+                                    onClick={() => setShowProfileMenu(false)}
+                                    className="flex items-center gap-3 px-4 py-2 hover:bg-background transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                    <span>Saved Posts</span>
+                                </Link>
+
+                                <Link
                                     href="/app/safety"
                                     onClick={() => setShowProfileMenu(false)}
                                     className="flex items-center gap-3 px-4 py-2 hover:bg-background transition-colors"
