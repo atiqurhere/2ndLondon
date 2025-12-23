@@ -12,7 +12,7 @@ export default function ProfilePage() {
     const params = useParams()
     const userId = params?.userId as string
     const { user } = useUser()
-    const isOwnProfile = user?.user?.id === userId
+    const isOwnProfile = user?.id === userId
 
     const { data: profile, isLoading: profileLoading } = useProfile(userId)
     const { data: posts, isLoading: postsLoading } = useUserPosts(userId)
@@ -75,11 +75,11 @@ export default function ProfilePage() {
 
                             {!isOwnProfile && user && (
                                 <button
-                                    onClick={() => toggleFollow.mutate(userId)}
+                                    onClick={() => toggleFollow.mutate({ userId, isFollowing: !!isFollowing })}
                                     disabled={toggleFollow.isPending}
                                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${isFollowing
-                                            ? 'bg-surface text-foreground border border-border hover:bg-error hover:text-white'
-                                            : 'bg-primary text-white hover:bg-primary/90'
+                                        ? 'bg-surface text-foreground border border-border hover:bg-error hover:text-white'
+                                        : 'bg-primary text-white hover:bg-primary/90'
                                         }`}
                                 >
                                     {toggleFollow.isPending
@@ -127,7 +127,7 @@ export default function ProfilePage() {
                         {/* Skills */}
                         {profile.skills && profile.skills.length > 0 && (
                             <div className="mt-4 flex flex-wrap gap-2">
-                                {profile.skills.map((skill) => (
+                                {profile.skills.map((skill: string) => (
                                     <span
                                         key={skill}
                                         className="px-3 py-1 bg-background text-sm rounded-full"
@@ -147,8 +147,8 @@ export default function ProfilePage() {
                     <button
                         onClick={() => setActiveTab('posts')}
                         className={`pb-3 font-medium transition-colors ${activeTab === 'posts'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-muted hover:text-foreground'
+                            ? 'text-primary border-b-2 border-primary'
+                            : 'text-muted hover:text-foreground'
                             }`}
                     >
                         Posts
@@ -156,8 +156,8 @@ export default function ProfilePage() {
                     <button
                         onClick={() => setActiveTab('followers')}
                         className={`pb-3 font-medium transition-colors ${activeTab === 'followers'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-muted hover:text-foreground'
+                            ? 'text-primary border-b-2 border-primary'
+                            : 'text-muted hover:text-foreground'
                             }`}
                     >
                         Followers
@@ -165,8 +165,8 @@ export default function ProfilePage() {
                     <button
                         onClick={() => setActiveTab('following')}
                         className={`pb-3 font-medium transition-colors ${activeTab === 'following'
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-muted hover:text-foreground'
+                            ? 'text-primary border-b-2 border-primary'
+                            : 'text-muted hover:text-foreground'
                             }`}
                     >
                         Following
@@ -181,8 +181,8 @@ export default function ProfilePage() {
                         <div className="text-center py-12">
                             <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                         </div>
-                    ) : posts && posts.length > 0 ? (
-                        posts.map((post: any) => <PostCard key={post.id} post={post} />)
+                    ) : posts?.pages && posts.pages.length > 0 && posts.pages[0].length > 0 ? (
+                        posts.pages.flatMap((page: any) => page).map((post: any) => <PostCard key={post.id} post={post} />)
                     ) : (
                         <div className="text-center py-12">
                             <p className="text-muted">No posts yet</p>
