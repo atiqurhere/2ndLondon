@@ -62,7 +62,6 @@ export default function CreateMomentPage() {
 
     const watchType = watch('type')
     const watchRewardType = watch('reward_type')
-    const watchTags = watch('tags')
 
     const onSubmit = async (data: MomentForm) => {
         console.log('Form submitted:', data)
@@ -71,7 +70,7 @@ export default function CreateMomentPage() {
             expiresAt.setHours(expiresAt.getHours() + data.expires_in_hours)
 
             // Remove expires_in_hours from data as it's not a database column
-            const { expires_in_hours, ...momentData } = data
+            const { expires_in_hours: _unused, ...momentData } = data
 
             console.log('Creating moment with data:', {
                 ...momentData,

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 
 export default function FeedPage() {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
-    const { data: moments, isLoading, error } = useFeed('nearby', userLocation?.lat, userLocation?.lng)
+    const { data: moments, isLoading } = useFeed('nearby', userLocation?.lat, userLocation?.lng)
 
     useEffect(() => {
         // Try to get user location
@@ -40,12 +40,6 @@ export default function FeedPage() {
                 <div className="text-center py-12">
                     <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                     <p className="text-muted mt-4">Loading moments...</p>
-                </div>
-            )}
-
-            {error && (
-                <div className="bg-danger bg-opacity-10 text-danger p-4 rounded-lg">
-                    Error loading moments. Please try again.
                 </div>
             )}
 

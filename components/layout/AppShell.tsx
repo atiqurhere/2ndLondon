@@ -28,7 +28,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 .single()
                 .then(({ data }) => setProfile(data))
         }
-    }, [user])
+    }, [user, supabase])
 
     // Close menu when clicking outside
     useEffect(() => {
