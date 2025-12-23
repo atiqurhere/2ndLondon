@@ -152,7 +152,10 @@ export function CommentsList({ postId }: CommentsListProps) {
                                     </p>
                                 </div>
                                 <p className="text-xs text-muted mt-1 px-3">
-                                    {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                                    {comment.created_at
+                                        ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })
+                                        : 'Just now'
+                                    }
                                 </p>
                             </div>
                         </div>

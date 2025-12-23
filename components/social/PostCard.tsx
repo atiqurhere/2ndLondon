@@ -57,7 +57,10 @@ export function PostCard({ post, showComments = true }: PostCardProps) {
                             <p className="text-sm text-muted truncate">{post.author_headline}</p>
                         )}
                         <p className="text-xs text-muted">
-                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                            {post.created_at
+                                ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
+                                : 'Just now'
+                            }
                         </p>
                     </div>
                 </Link>
