@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/helpers'
 
 const navItems = [
-    { href: '/app/feed', label: 'Feed', icon: '📍' },
-    { href: '/app/ending-soon', label: 'Ending Soon', icon: '⏰' },
+    { href: '/app/social', label: 'Social', icon: '📱' },
+    { href: '/app/feed', label: 'Moments', icon: '📍' },
     { href: '/app/moments/new', label: 'Create', icon: '➕' },
     { href: '/app/inbox', label: 'Inbox', icon: '💬' },
     { href: '/app/profile', label: 'Profile', icon: '👤' },
