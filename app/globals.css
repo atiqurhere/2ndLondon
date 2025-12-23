@@ -3,44 +3,64 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 13 13 13;
+    --foreground: 250 250 250;
+    --primary: 255 255 255;
+    --muted: 163 163 163;
+    --surface: 28 28 28;
+    --border: 38 38 38;
+    --success: 34 197 94;
+    --danger: 239 68 68;
+  }
+
   * {
     @apply border-border;
   }
-  
-  body {
-    @apply bg-background text-primary antialiased;
-  }
 
   html {
-    @apply h-full;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
-    @apply h-full;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-x: hidden;
   }
-}
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
   }
-}
 
-/* Custom scrollbar for dark theme */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
 
-::-webkit-scrollbar-track {
-  background: #15151C;
-}
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: #27272A;
-  border-radius: 4px;
-}
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #3F3F46;
+  /* Smooth transitions */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Focus styles */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible {
+    outline: 2px solid rgb(var(--primary));
+    outline-offset: 2px;
+  }
 }
