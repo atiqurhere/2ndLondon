@@ -15,8 +15,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Main Content - Responsive to sidebar state */}
             <div
-                className="flex flex-col min-h-screen transition-all duration-300"
-                style={{ marginLeft: isSidebarExpanded ? '256px' : '80px' }}
+                className={`flex flex-col min-h-screen transition-all duration-300 ${isSidebarExpanded ? 'md:ml-64' : 'md:ml-20'
+                    }`}
             >
                 {/* Top Bar */}
                 <header className="h-16 border-b border-border bg-surface/50 backdrop-blur-sm flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
