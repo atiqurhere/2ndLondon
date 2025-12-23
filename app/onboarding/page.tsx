@@ -37,17 +37,22 @@ export default function OnboardingPage() {
     const {
         register,
         handleSubmit,
+        setValue,
         formState: { errors },
     } = useForm<OnboardingForm>({
         resolver: zodResolver(onboardingSchema),
+        defaultValues: {
+            interests: [],
+        },
     })
 
     const toggleInterest = (interest: string) => {
-        setSelectedInterests((prev) =>
-            prev.includes(interest)
-                ? prev.filter((i) => i !== interest)
-                : [...prev, interest]
-        )
+        const newInterests = selectedInterests.includes(interest)
+            ? selectedInterests.filter((i) => i !== interest)
+            : [...selectedInterests, interest]
+
+        setSelectedInterests(newInterests)
+        setValue('interests', newInterests, { shouldValidate: true })
     }
 
     const onSubmit = async (data: OnboardingForm) => {
