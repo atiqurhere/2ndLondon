@@ -1,83 +1,82 @@
+// @ts-nocheck
+// This file runs in Deno runtime on Supabase Edge Functions
+// TypeScript errors are expected when viewed in Node.js environment
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
     try {
-        // Create Supabase client with service role key
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-            {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false
-                }
-            }
-        )
+        // Create Supabase client
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+        const supabase = createClient(supabaseUrl, supabaseKey)
 
-        // Mark expired moments
-        const { data: expiredMoments, error: expireError } = await supabaseClient
+        // Get current time
+        const now = new Date().toISOString()
+
+        // Find expired moments
+        const { data: expiredMoments, error: fetchError } = await supabase
+            .from('moments')
+            .select('id, creator_id, title')
+            .eq('status', 'active')
+            .lt('expires_at', now)
+
+        if (fetchError) throw fetchError
+
+        if (!expiredMoments || expiredMoments.length === 0) {
+            return new Response(
+                JSON.stringify({ message: 'No expired moments found', count: 0 }),
+                { headers: { 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const momentIds = expiredMoments.map((m: any) => m.id)
+
+        // Update moments to expired
+        const { error: updateError } = await supabase
             .from('moments')
             .update({ status: 'expired' })
-            .eq('status', 'active')
-            .lt('expires_at', new Date().toISOString())
-            .select('id, creator_id, title')
+            .in('id', momentIds)
 
-        if (expireError) {
-            console.error('Error expiring moments:', expireError)
-            throw expireError
-        }
+        if (updateError) throw updateError
 
-        console.log(`Expired ${expiredMoments?.length || 0} moments`)
+        // Cancel pending applications
+        const { error: cancelError } = await supabase
+            .from('applications')
+            .update({ status: 'cancelled' })
+            .in('moment_id', momentIds)
+            .eq('status', 'pending')
 
-        // Close pending applications for expired moments
-        if (expiredMoments && expiredMoments.length > 0) {
-            const momentIds = expiredMoments.map(m => m.id)
+        if (cancelError) throw cancelError
 
-            const { error: appError } = await supabaseClient
-                .from('applications')
-                .update({ status: 'cancelled' })
-                .in('moment_id', momentIds)
-                .eq('status', 'pending')
+        // Create notifications for creators
+        const notifications = expiredMoments.map((moment: any) => ({
+            user_id: moment.creator_id,
+            type: 'moment_expired',
+            title: 'Moment Expired',
+            message: `Your moment "${moment.title}" has expired`,
+            data: { moment_id: moment.id },
+        }))
 
-            if (appError) {
-                console.error('Error cancelling applications:', appError)
-            }
+        const { error: notifError } = await supabase
+            .from('notifications')
+            .insert(notifications)
 
-            // Create notifications for creators
-            const notifications = expiredMoments.map(moment => ({
-                user_id: moment.creator_id,
-                type: 'moment_expired',
-                title: 'Moment Expired',
-                body: `Your moment "${moment.title}" has expired`,
-                link: `/app/moments/${moment.id}`
-            }))
-
-            const { error: notifError } = await supabaseClient
-                .from('notifications')
-                .insert(notifications)
-
-            if (notifError) {
-                console.error('Error creating notifications:', notifError)
-            }
-        }
+        if (notifError) throw notifError
 
         return new Response(
             JSON.stringify({
-                success: true,
-                expired_count: expiredMoments?.length || 0
+                message: 'Successfully expired moments',
+                count: expiredMoments.length,
+                momentIds,
             }),
-            {
-                headers: { 'Content-Type': 'application/json' },
-                status: 200
-            }
+            { headers: { 'Content-Type': 'application/json' } }
         )
-    } catch (error) {
+    } catch (error: any) {
+        console.error('Error expiring moments:', error)
         return new Response(
             JSON.stringify({ error: error.message }),
-            {
-                headers: { 'Content-Type': 'application/json' },
-                status: 500
-            }
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
         )
     }
 })
