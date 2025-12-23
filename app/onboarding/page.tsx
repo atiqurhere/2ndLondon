@@ -31,6 +31,8 @@ const interestOptions = [
 export default function OnboardingPage() {
     const [loading, setLoading] = useState(false)
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+    const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
+    const [usernameError, setUsernameError] = useState('')
     const router = useRouter()
     const supabase = createClient()
 
@@ -38,6 +40,7 @@ export default function OnboardingPage() {
         register,
         handleSubmit,
         setValue,
+        watch,
         formState: { errors },
     } = useForm<OnboardingForm>({
         resolver: zodResolver(onboardingSchema),
@@ -45,6 +48,51 @@ export default function OnboardingPage() {
             interests: [],
         },
     })
+
+    const username = watch('username')
+
+    // Debounced username availability check
+    useEffect(() => {
+        if (!username || username.length < 3) {
+            setUsernameStatus('idle')
+            setUsernameError('')
+            return
+        }
+
+        // Check format first
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            setUsernameStatus('idle')
+            return
+        }
+
+        setUsernameStatus('checking')
+        setUsernameError('')
+
+        const timeoutId = setTimeout(async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('username')
+                    .eq('username', username)
+                    .maybeSingle()
+
+                if (error) throw error
+
+                if (data) {
+                    setUsernameStatus('taken')
+                    setUsernameError('Username is already taken')
+                } else {
+                    setUsernameStatus('available')
+                    setUsernameError('')
+                }
+            } catch (error) {
+                console.error('Username check error:', error)
+                setUsernameStatus('idle')
+            }
+        }, 500) // 500ms debounce
+
+        return () => clearTimeout(timeoutId)
+    }, [username, supabase])
 
     const toggleInterest = (interest: string) => {
         const newInterests = selectedInterests.includes(interest)
@@ -56,6 +104,17 @@ export default function OnboardingPage() {
     }
 
     const onSubmit = async (data: OnboardingForm) => {
+        // Prevent submission if username is taken
+        if (usernameStatus === 'taken') {
+            setUsernameError('Please choose a different username')
+            return
+        }
+
+        if (usernameStatus === 'checking') {
+            setUsernameError('Please wait while we check username availability')
+            return
+        }
+
         setLoading(true)
 
         try {
@@ -97,15 +156,39 @@ export default function OnboardingPage() {
                             <label htmlFor="username" className="block text-sm font-medium mb-2">
                                 Username
                             </label>
-                            <input
-                                {...register('username')}
-                                type="text"
-                                id="username"
-                                className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="e.g., john_doe"
-                            />
+                            <div className="relative">
+                                <input
+                                    {...register('username')}
+                                    type="text"
+                                    id="username"
+                                    className="w-full px-4 py-3 pr-12 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    placeholder="e.g., john_doe"
+                                />
+                                {/* Availability Indicator */}
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    {usernameStatus === 'checking' && (
+                                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                    )}
+                                    {usernameStatus === 'available' && (
+                                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    )}
+                                    {usernameStatus === 'taken' && (
+                                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    )}
+                                </div>
+                            </div>
                             {errors.username && (
                                 <p className="text-danger text-sm mt-1">{errors.username.message}</p>
+                            )}
+                            {usernameError && (
+                                <p className="text-red-500 text-sm mt-1">{usernameError}</p>
+                            )}
+                            {usernameStatus === 'available' && !errors.username && (
+                                <p className="text-green-500 text-sm mt-1">✓ Username is available</p>
                             )}
                             <p className="text-xs text-muted mt-1">
                                 Letters, numbers, and underscores only
