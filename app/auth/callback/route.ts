@@ -23,11 +23,11 @@ export async function GET(request: Request) {
             }).eq('id', user.id)
 
             // Check if user needs onboarding (no home_area set)
-            const { data: profile } = await supabase
+            const { data: profile } = await (supabase
                 .from('profiles')
                 .select('home_area')
                 .eq('id', user.id)
-                .single()
+                .single() as any)
 
             // Redirect to onboarding if profile incomplete
             if (!profile?.home_area) {

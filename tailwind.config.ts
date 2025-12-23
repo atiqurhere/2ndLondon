@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+    darkMode: ["class"],
     content: [
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,21 +10,20 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
-                // BeReal-inspired dark theme
-                background: "#0B0B0F",
-                surface: "#15151C",
-                primary: "#FFFFFF",
-                muted: "#A1A1AA",
-                success: "#22C55E",
-                warning: "#F97316",
-                danger: "#EF4444",
-                border: "#27272A",
-            },
-            fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
+                background: 'rgb(13, 13, 13)',
+                foreground: 'rgb(250, 250, 250)',
+                primary: 'rgb(255, 255, 255)',
+                muted: 'rgb(163, 163, 163)',
+                surface: 'rgb(28, 28, 28)',
+                border: 'rgb(38, 38, 38)',
+                success: 'rgb(34, 197, 94)',
+                danger: 'rgb(239, 68, 68)',
             },
             borderRadius: {
                 card: '12px',
+            },
+            fontFamily: {
+                sans: ['Inter', 'sans-serif'],
             },
         },
     },
