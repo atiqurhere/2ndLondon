@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useForm } from 'react-hook-form'
@@ -26,7 +26,7 @@ const signupSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>
 type SignupForm = z.infer<typeof signupSchema>
 
-export default function AuthPage() {
+function AuthContent() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const router = useRouter()
@@ -49,7 +49,7 @@ export default function AuthPage() {
         setError('')
 
         try {
-            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            const { error: authError } = await supabase.auth.signInWithPassword({
                 email: data.email,
                 password: data.password,
             })
@@ -338,7 +338,7 @@ export default function AuthPage() {
                 <div className="mt-6 text-center text-sm text-muted">
                     {isLogin ? (
                         <>
-                            Don't have an account?{' '}
+                            Don&apos;t have an account?{' '}
                             <a href="/auth?mode=signup" className="text-primary hover:underline font-medium">
                                 Sign up
                             </a>
@@ -362,5 +362,17 @@ export default function AuthPage() {
                 </p>
             </div>
         </div>
+    )
+}
+
+export default function AuthPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        }>
+            <AuthContent />
+        </Suspense>
     )
 }
