@@ -36,14 +36,24 @@ export async function middleware(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // Protect /app routes
-    if (request.nextUrl.pathname.startsWith('/app') && !user) {
-        return NextResponse.redirect(new URL('/auth', request.url))
+    // Allow auth callback route
+    if (request.nextUrl.pathname === '/auth/callback') {
+        return response
     }
 
-    // Redirect authenticated users from auth pages
-    if (request.nextUrl.pathname.startsWith('/auth') && user) {
+    // Protect /app routes
+    if (request.nextUrl.pathname.startsWith('/app') && !user) {
+        return NextResponse.redirect(new URL('/auth?mode=login', request.url))
+    }
+
+    // Redirect authenticated users from auth pages to feed (unless they're on callback)
+    if (request.nextUrl.pathname === '/auth' && user) {
         return NextResponse.redirect(new URL('/app/feed', request.url))
+    }
+
+    // Allow onboarding for authenticated users
+    if (request.nextUrl.pathname === '/onboarding' && !user) {
+        return NextResponse.redirect(new URL('/auth?mode=signup', request.url))
     }
 
     return response
