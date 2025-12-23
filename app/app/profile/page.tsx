@@ -35,15 +35,16 @@ export default function ProfilePage() {
             if (error) throw error
 
             // Set form data when profile loads
-            if (data) {
+            const profileData = data as any
+            if (profileData) {
                 setFormData({
-                    display_name: data.display_name || '',
-                    home_area: data.home_area || '',
-                    phone: data.phone || '',
+                    display_name: profileData.display_name || '',
+                    home_area: profileData.home_area || '',
+                    phone: profileData.phone || '',
                 })
             }
 
-            return data as any
+            return profileData
         },
         enabled: !!user?.id,
     })
