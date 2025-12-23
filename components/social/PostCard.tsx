@@ -5,10 +5,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import type { Post } from '@/types/social'
-import { ReactionBar } from './ReactionBar'
+import { ReactionBar } from '@/components/social/ReactionBar'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useDeletePost } from '@/lib/hooks/usePosts'
-import { AttachmentGallery } from './AttachmentGallery'
+import { AttachmentGallery } from '@/components/social/AttachmentGallery'
 
 interface PostCardProps {
     post: Post

@@ -64,10 +64,10 @@ export function PostComposer({ onSuccess }: PostComposerProps) {
             const post = await createPost.mutateAsync({
                 content: data.content,
                 link_url: data.link_url || undefined,
-            })
+            }) as { id: string }
 
             // Upload attachments
-            if (files.length > 0) {
+            if (files.length > 0 && post?.id) {
                 await Promise.all(
                     files.map((file) =>
                         uploadAttachment.mutateAsync({
