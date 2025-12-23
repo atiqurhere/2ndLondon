@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
 const onboardingSchema = z.object({
-    display_name: z.string().min(2, 'Name must be at least 2 characters'),
+    username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must be at most 20 characters').regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
     home_area: z.string().min(2, 'Home area is required'),
     interests: z.array(z.string()).min(1, 'Select at least one interest'),
 })
@@ -65,8 +65,9 @@ export default function OnboardingPage() {
             const { error } = await (supabase
                 .from('profiles') as any)
                 .update({
-                    display_name: data.display_name,
+                    username: data.username,
                     home_area: data.home_area,
+                    interests: data.interests,
                 })
                 .eq('id', user.id)
 
@@ -91,21 +92,24 @@ export default function OnboardingPage() {
 
                 <div className="bg-surface p-8 rounded-card border border-border">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        {/* Display Name */}
+                        {/* Username */}
                         <div>
-                            <label htmlFor="display_name" className="block text-sm font-medium mb-2">
-                                Display Name
+                            <label htmlFor="username" className="block text-sm font-medium mb-2">
+                                Username
                             </label>
                             <input
-                                {...register('display_name')}
+                                {...register('username')}
                                 type="text"
-                                id="display_name"
+                                id="username"
                                 className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="How should we call you?"
+                                placeholder="e.g., john_doe"
                             />
-                            {errors.display_name && (
-                                <p className="text-danger text-sm mt-1">{errors.display_name.message}</p>
+                            {errors.username && (
+                                <p className="text-danger text-sm mt-1">{errors.username.message}</p>
                             )}
+                            <p className="text-xs text-muted mt-1">
+                                Letters, numbers, and underscores only
+                            </p>
                         </div>
 
                         {/* Home Area */}

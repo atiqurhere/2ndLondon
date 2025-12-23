@@ -289,6 +289,23 @@ export default function ProfilePage() {
                 </div>
             </div>
 
+            {/* Interests */}
+            {profile?.interests && profile.interests.length > 0 && (
+                <div className="bg-surface rounded-card border border-border p-6 mb-6">
+                    <h2 className="text-xl font-bold mb-4">Interests</h2>
+                    <div className="flex flex-wrap gap-2">
+                        {profile.interests.map((interest: string) => (
+                            <span
+                                key={interest}
+                                className="px-3 py-1 bg-background border border-border rounded-full text-sm"
+                            >
+                                {interest}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Contact Info */}
             {isEditing && (
                 <div className="bg-surface rounded-card border border-border p-6 mb-6">
