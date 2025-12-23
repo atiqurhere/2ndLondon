@@ -99,6 +99,12 @@ ON post_reaction_counts FOR SELECT
 TO authenticated
 USING (TRUE);
 
+-- Insert: allow authenticated users to insert (needed for triggers)
+CREATE POLICY "Allow authenticated inserts to reaction counts"
+ON post_reaction_counts FOR INSERT
+TO authenticated
+WITH CHECK (TRUE);
+
 -- ============================================
 -- COMMENTS POLICIES
 -- ============================================
