@@ -1,12 +1,10 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import Sidebar from './Sidebar'
-import BottomNav from './BottomNav'
+import { Sidebar } from './Sidebar'
+import { BottomNav } from './BottomNav'
 import Link from 'next/link'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname()
 
     return (
         <div className="min-h-screen bg-background flex">
