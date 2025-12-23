@@ -11,16 +11,48 @@ export async function GET(request: Request) {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error && data.user) {
-            // Extract user data from OAuth provider
             const { user } = data
             const metadata = user.user_metadata
 
+            console.log('OAuth User Metadata:', metadata)
+
+            // Extract data from various OAuth providers
+            const displayName =
+                metadata.full_name ||
+                metadata.name ||
+                metadata.display_name ||
+                metadata.user_name ||
+                user.email?.split('@')[0] ||
+                'User'
+
+            const avatarUrl =
+                metadata.avatar_url ||
+                metadata.picture ||
+                metadata.photo ||
+                metadata.image_url ||
+                null
+
+            const email = user.email || metadata.email
+
+            console.log('Extracted data:', { displayName, avatarUrl, email })
+
+            // Wait a bit to ensure profile is created by trigger
+            await new Promise(resolve => setTimeout(resolve, 1000))
+
             // Update profile with OAuth data
-            await (supabase.from('profiles') as any).update({
-                display_name: metadata.full_name || metadata.name || user.email?.split('@')[0],
-                avatar_url: metadata.avatar_url || metadata.picture,
-                email: user.email,
-            }).eq('id', user.id)
+            const { error: updateError } = await (supabase.from('profiles') as any)
+                .update({
+                    display_name: displayName,
+                    avatar_url: avatarUrl,
+                    email: email,
+                })
+                .eq('id', user.id)
+
+            if (updateError) {
+                console.error('Profile update error:', updateError)
+            } else {
+                console.log('Profile updated successfully')
+            }
 
             // Check if user needs onboarding (no home_area set)
             const { data: profile } = await (supabase
@@ -30,7 +62,7 @@ export async function GET(request: Request) {
                 .single() as any)
 
             // Redirect to onboarding if profile incomplete
-            if (!profile?.home_area) {
+            if (!profile?.home_area || profile.home_area === 'London') {
                 return NextResponse.redirect(`${origin}/onboarding`)
             }
         }

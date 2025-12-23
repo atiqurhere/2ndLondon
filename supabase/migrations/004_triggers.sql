@@ -2,10 +2,24 @@
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, display_name, home_area)
+  INSERT INTO public.profiles (id, display_name, email, avatar_url, home_area)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'display_name', 'User'),
+    COALESCE(
+      NEW.raw_user_meta_data->>'full_name',
+      NEW.raw_user_meta_data->>'name',
+      NEW.raw_user_meta_data->>'display_name',
+      NEW.raw_user_meta_data->>'user_name',
+      split_part(NEW.email, '@', 1),
+      'User'
+    ),
+    NEW.email,
+    COALESCE(
+      NEW.raw_user_meta_data->>'avatar_url',
+      NEW.raw_user_meta_data->>'picture',
+      NEW.raw_user_meta_data->>'photo',
+      NEW.raw_user_meta_data->>'image_url'
+    ),
     COALESCE(NEW.raw_user_meta_data->>'home_area', 'London')
   );
   
