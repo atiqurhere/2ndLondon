@@ -25,6 +25,9 @@ const config: Config = {
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
             },
+            scale: {
+                '102': '1.02',
+            },
         },
     },
     plugins: [],
