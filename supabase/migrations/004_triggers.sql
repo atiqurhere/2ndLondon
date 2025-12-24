@@ -31,6 +31,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
@@ -57,6 +58,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_review_created ON reviews;
 CREATE TRIGGER on_review_created
   AFTER INSERT ON reviews
   FOR EACH ROW EXECUTE FUNCTION update_profile_rating();
@@ -83,89 +85,84 @@ BEGIN
     UPDATE moments
     SET status = 'matched'
     WHERE id = NEW.moment_id;
-    
-    -- Notify applicant
-    INSERT INTO notifications (user_id, type, title, body, link)
-    VALUES (
-      NEW.applicant_id,
-      'application_accepted',
-      'Application Accepted!',
-      'Your application has been accepted. You can now chat.',
-      '/app/inbox'
-    );
   END IF;
   
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_application_status_changed ON applications;
 CREATE TRIGGER on_application_status_changed
   AFTER UPDATE ON applications
   FOR EACH ROW EXECUTE FUNCTION handle_application_accepted();
 
 -- Trigger: Notify moment creator on new application
-CREATE OR REPLACE FUNCTION notify_on_application()
-RETURNS TRIGGER AS $$
-DECLARE
-  moment_creator_id UUID;
-  moment_title TEXT;
-BEGIN
-  -- Get moment details
-  SELECT creator_id, title INTO moment_creator_id, moment_title
-  FROM moments
-  WHERE id = NEW.moment_id;
-  
-  -- Notify creator
-  INSERT INTO notifications (user_id, type, title, body, link)
-  VALUES (
-    moment_creator_id,
-    'application_received',
-    'New Application',
-    'Someone applied to "' || moment_title || '"',
-    '/app/moments/' || NEW.moment_id
-  );
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_application_created
-  AFTER INSERT ON applications
-  FOR EACH ROW EXECUTE FUNCTION notify_on_application();
+-- MOVED TO MIGRATION 011 (notifications table doesn't exist yet)
+-- CREATE OR REPLACE FUNCTION notify_on_application()
+-- RETURNS TRIGGER AS $$
+-- DECLARE
+--   moment_creator_id UUID;
+--   moment_title TEXT;
+-- BEGIN
+--   -- Get moment details
+--   SELECT creator_id, title INTO moment_creator_id, moment_title
+--   FROM moments
+--   WHERE id = NEW.moment_id;
+--   
+--   -- Notify creator
+--   INSERT INTO notifications (user_id, type, title, body, link)
+--   VALUES (
+--     moment_creator_id,
+--     'application_received',
+--     'New Application',
+--     'Someone applied to "' || moment_title || '"',
+--     '/app/moments/' || NEW.moment_id
+--   );
+--   
+--   RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql SECURITY DEFINER;
+-- 
+-- DROP TRIGGER IF EXISTS on_application_created ON applications;
+-- CREATE TRIGGER on_application_created
+--   AFTER INSERT ON applications
+--   FOR EACH ROW EXECUTE FUNCTION notify_on_application();
 
 -- Trigger: Notify on new message
-CREATE OR REPLACE FUNCTION notify_on_message()
-RETURNS TRIGGER AS $$
-DECLARE
-  recipient_id UUID;
-  sender_name TEXT;
-BEGIN
-  -- Determine recipient (the other participant)
-  SELECT
-    CASE
-      WHEN c.creator_id = NEW.sender_id THEN c.other_id
-      ELSE c.creator_id
-    END,
-    p.display_name
-  INTO recipient_id, sender_name
-  FROM conversations c
-  JOIN profiles p ON p.id = NEW.sender_id
-  WHERE c.id = NEW.conversation_id;
-  
-  -- Notify recipient
-  INSERT INTO notifications (user_id, type, title, body, link)
-  VALUES (
-    recipient_id,
-    'message',
-    'New Message',
-    sender_name || ' sent you a message',
-    '/app/inbox/' || NEW.conversation_id
-  );
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_message_created
-  AFTER INSERT ON messages
-  FOR EACH ROW EXECUTE FUNCTION notify_on_message();
+-- MOVED TO MIGRATION 011 (notifications table doesn't exist yet)
+-- CREATE OR REPLACE FUNCTION notify_on_message()
+-- RETURNS TRIGGER AS $$
+-- DECLARE
+--   recipient_id UUID;
+--   sender_name TEXT;
+-- BEGIN
+--   -- Determine recipient (the other participant)
+--   SELECT
+--     CASE
+--       WHEN c.creator_id = NEW.sender_id THEN c.other_id
+--       ELSE c.creator_id
+--     END,
+--     p.display_name
+--   INTO recipient_id, sender_name
+--   FROM conversations c
+--   JOIN profiles p ON p.id = NEW.sender_id
+--   WHERE c.id = NEW.conversation_id;
+--   
+--   -- Notify recipient
+--   INSERT INTO notifications (user_id, type, title, body, link)
+--   VALUES (
+--     recipient_id,
+--     'message',
+--     'New Message',
+--     sender_name || ' sent you a message',
+--     '/app/inbox/' || NEW.conversation_id
+--   );
+--   
+--   RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql SECURITY DEFINER;
+-- 
+-- DROP TRIGGER IF EXISTS on_message_created ON messages;
+-- CREATE TRIGGER on_message_created
+--   AFTER INSERT ON messages
+--   FOR EACH ROW EXECUTE FUNCTION notify_on_message();
