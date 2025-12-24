@@ -89,29 +89,6 @@ CREATE TABLE reviews (
 );
 
 -- Reports table
-CREATE TABLE reports (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  reporter_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  target_type TEXT NOT NULL CHECK (target_type IN ('moment', 'user', 'message')),
-  target_id UUID NOT NULL,
-  reason TEXT NOT NULL CHECK (LENGTH(reason) >= 3 AND LENGTH(reason) <= 100),
-  details TEXT CHECK (details IS NULL OR LENGTH(details) <= 1000),
-  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'reviewing', 'resolved', 'rejected')),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- Notifications table
-CREATE TABLE notifications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
-  title TEXT NOT NULL CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
-  body TEXT NOT NULL CHECK (LENGTH(body) >= 1 AND LENGTH(body) <= 500),
-  link TEXT,
-  read BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
 -- Roles table
 CREATE TABLE roles (
   user_id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
@@ -129,5 +106,3 @@ CREATE INDEX idx_applications_moment ON applications(moment_id);
 CREATE INDEX idx_applications_applicant ON applications(applicant_id);
 CREATE INDEX idx_conversations_participants ON conversations(creator_id, other_id);
 CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at DESC);
-CREATE INDEX idx_notifications_user_read ON notifications(user_id, read, created_at DESC);
-CREATE INDEX idx_reports_status ON reports(status, created_at DESC);
