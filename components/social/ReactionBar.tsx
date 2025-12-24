@@ -112,9 +112,7 @@ export function ReactionBar({ post }: ReactionBarProps) {
                             {post.comment_count} {post.comment_count === 1 ? 'comment' : 'comments'}
                         </button>
                     )}
-                    {post.save_count > 0 && (
-                        <span>{post.save_count} {post.save_count === 1 ? 'save' : 'saves'}</span>
-                    )}
+
                 </div>
             </div>
 
@@ -125,8 +123,8 @@ export function ReactionBar({ post }: ReactionBarProps) {
                     <button
                         onClick={() => setShowPicker(!showPicker)}
                         className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${currentReaction
-                                ? 'bg-primary bg-opacity-10 text-primary'
-                                : 'hover:bg-background text-muted hover:text-primary'
+                            ? 'bg-primary bg-opacity-10 text-primary'
+                            : 'hover:bg-background text-muted hover:text-primary'
                             }`}
                     >
                         <span className="text-lg">{currentReaction?.icon || '👍'}</span>
@@ -167,8 +165,8 @@ export function ReactionBar({ post }: ReactionBarProps) {
                 <button
                     onClick={handleSave}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${post.is_saved
-                            ? 'text-primary bg-primary bg-opacity-10'
-                            : 'text-muted hover:text-primary hover:bg-background'
+                        ? 'text-primary bg-primary bg-opacity-10'
+                        : 'text-muted hover:text-primary hover:bg-background'
                         }`}
                     title={post.is_saved ? 'Unsave' : 'Save'}
                 >
