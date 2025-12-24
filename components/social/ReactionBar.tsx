@@ -191,7 +191,7 @@ export function ReactionBar({ post }: ReactionBarProps) {
 
                     {/* Share Menu */}
                     {showShareMenu && (
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-surface border border-border rounded-lg shadow-lg py-2 z-10 min-w-[200px]">
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-surface border border-border rounded-lg shadow-lg py-2 z-10 min-w-[200px]">
                             <button
                                 onClick={copyLink}
                                 className="w-full px-4 py-2 text-left hover:bg-background transition-colors flex items-center gap-2"
