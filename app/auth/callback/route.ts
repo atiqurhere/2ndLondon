@@ -54,15 +54,15 @@ export async function GET(request: Request) {
                 console.log('Profile updated successfully')
             }
 
-            // Check if user needs onboarding (no home_area set)
+            // Check if user needs onboarding
             const { data: profile } = await (supabase
                 .from('profiles')
-                .select('home_area')
+                .select('onboarding_completed')
                 .eq('id', user.id)
                 .single() as any)
 
-            // Redirect to onboarding if profile incomplete
-            if (!profile?.home_area) {
+            // Redirect to onboarding if not completed
+            if (!profile?.onboarding_completed) {
                 return NextResponse.redirect(`${origin}/onboarding`)
             }
         }
