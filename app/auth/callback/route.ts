@@ -62,7 +62,7 @@ export async function GET(request: Request) {
                 .single() as any)
 
             // Redirect to onboarding if profile incomplete
-            if (!profile?.home_area || profile.home_area === 'London') {
+            if (!profile?.home_area) {
                 return NextResponse.redirect(`${origin}/onboarding`)
             }
         }
