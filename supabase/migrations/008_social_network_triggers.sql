@@ -179,122 +179,120 @@ CREATE TRIGGER maintain_post_count
 -- ============================================
 -- NOTIFICATION TRIGGERS
 -- ============================================
--- DISABLED: notifications table doesn't have post_id, comment_id columns
--- These can be re-enabled later if notifications schema is updated
 
--- -- Notify on new reaction
--- CREATE OR REPLACE FUNCTION notify_on_reaction()
--- RETURNS TRIGGER AS $$
--- DECLARE
---     post_author_id UUID;
---     actor_name TEXT;
--- BEGIN
---     -- Get post author
---     SELECT author_id INTO post_author_id 
---     FROM posts 
---     WHERE id = NEW.post_id;
---     
---     -- Don't notify self-reactions
---     IF post_author_id != NEW.user_id THEN
---         -- Get actor name
---         SELECT display_name INTO actor_name 
---         FROM profiles 
---         WHERE id = NEW.user_id;
---         
---         -- Create notification
---         INSERT INTO notifications (user_id, type, actor_id, post_id, title, body, link)
---         VALUES (
---             post_author_id,
---             'reaction',
---             NEW.user_id,
---             NEW.post_id,
---             'New Reaction',
---             actor_name || ' reacted to your post',
---             '/app/post/' || NEW.post_id
---         );
---     END IF;
---     
---     RETURN NULL;
--- END;
--- $$ LANGUAGE plpgsql SECURITY DEFINER;
--- 
--- DROP TRIGGER IF EXISTS notify_reaction ON post_reactions;
--- CREATE TRIGGER notify_reaction
---     AFTER INSERT ON post_reactions
---     FOR EACH ROW
---     EXECUTE FUNCTION notify_on_reaction();
+-- Notify on new reaction
+CREATE OR REPLACE FUNCTION notify_on_reaction()
+RETURNS TRIGGER AS $$
+DECLARE
+    post_author_id UUID;
+    actor_name TEXT;
+BEGIN
+    -- Get post author
+    SELECT author_id INTO post_author_id 
+    FROM posts 
+    WHERE id = NEW.post_id;
+    
+    -- Don't notify self-reactions
+    IF post_author_id != NEW.user_id THEN
+        -- Get actor name
+        SELECT display_name INTO actor_name 
+        FROM profiles 
+        WHERE id = NEW.user_id;
+        
+        -- Create notification
+        INSERT INTO notifications (user_id, type, actor_id, post_id, title, body, link)
+        VALUES (
+            post_author_id,
+            'reaction',
+            NEW.user_id,
+            NEW.post_id,
+            'New Reaction',
+            actor_name || ' reacted to your post',
+            '/app/post/' || NEW.post_id
+        );
+    END IF;
+    
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- -- Notify on new comment
--- CREATE OR REPLACE FUNCTION notify_on_comment()
--- RETURNS TRIGGER AS $$
--- DECLARE
---     post_author_id UUID;
---     actor_name TEXT;
--- BEGIN
---     -- Get post author
---     SELECT author_id INTO post_author_id 
---     FROM posts 
---     WHERE id = NEW.post_id;
---     
---     -- Don't notify self-comments
---     IF post_author_id != NEW.author_id THEN
---         -- Get actor name
---         SELECT display_name INTO actor_name 
---         FROM profiles 
---         WHERE id = NEW.author_id;
---         
---         -- Create notification
---         INSERT INTO notifications (user_id, type, actor_id, post_id, comment_id, title, body, link)
---         VALUES (
---             post_author_id,
---             'comment',
---             NEW.author_id,
---             NEW.post_id,
---             NEW.id,
---             'New Comment',
---             actor_name || ' commented on your post',
---             '/app/post/' || NEW.post_id
---         );
---     END IF;
---     
---     RETURN NULL;
--- END;
--- $$ LANGUAGE plpgsql SECURITY DEFINER;
--- 
--- DROP TRIGGER IF EXISTS notify_comment ON comments;
--- CREATE TRIGGER notify_comment
---     AFTER INSERT ON comments
---     FOR EACH ROW
---     EXECUTE FUNCTION notify_on_comment();
+DROP TRIGGER IF EXISTS notify_reaction ON post_reactions;
+CREATE TRIGGER notify_reaction
+    AFTER INSERT ON post_reactions
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_on_reaction();
 
--- -- Notify on new follow
--- CREATE OR REPLACE FUNCTION notify_on_follow()
--- RETURNS TRIGGER AS $$
--- DECLARE
---     follower_name TEXT;
--- BEGIN
---     -- Get follower name
---     SELECT display_name INTO follower_name 
---     FROM profiles 
---     WHERE id = NEW.follower_id;
---     
---     -- Create notification
---     INSERT INTO notifications (user_id, type, actor_id, title, body, link)
---     VALUES (
---         NEW.following_id,
---         'follow',
---         NEW.follower_id,
---         'New Follower',
---         follower_name || ' started following you',
---         '/app/profile/' || NEW.follower_id
---     );
---     
---     RETURN NULL;
--- END;
--- $$ LANGUAGE plpgsql SECURITY DEFINER;
--- 
--- DROP TRIGGER IF EXISTS notify_follow ON follows;
--- CREATE TRIGGER notify_follow
---     AFTER INSERT ON follows
---     FOR EACH ROW
---     EXECUTE FUNCTION notify_on_follow();
+-- Notify on new comment
+CREATE OR REPLACE FUNCTION notify_on_comment()
+RETURNS TRIGGER AS $$
+DECLARE
+    post_author_id UUID;
+    actor_name TEXT;
+BEGIN
+    -- Get post author
+    SELECT author_id INTO post_author_id 
+    FROM posts 
+    WHERE id = NEW.post_id;
+    
+    -- Don't notify self-comments
+    IF post_author_id != NEW.author_id THEN
+        -- Get actor name
+        SELECT display_name INTO actor_name 
+        FROM profiles 
+        WHERE id = NEW.author_id;
+        
+        -- Create notification
+        INSERT INTO notifications (user_id, type, actor_id, post_id, comment_id, title, body, link)
+        VALUES (
+            post_author_id,
+            'comment',
+            NEW.author_id,
+            NEW.post_id,
+            NEW.id,
+            'New Comment',
+            actor_name || ' commented on your post',
+            '/app/post/' || NEW.post_id
+        );
+    END IF;
+    
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS notify_comment ON comments;
+CREATE TRIGGER notify_comment
+    AFTER INSERT ON comments
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_on_comment();
+
+-- Notify on new follow
+CREATE OR REPLACE FUNCTION notify_on_follow()
+RETURNS TRIGGER AS $$
+DECLARE
+    follower_name TEXT;
+BEGIN
+    -- Get follower name
+    SELECT display_name INTO follower_name 
+    FROM profiles 
+    WHERE id = NEW.follower_id;
+    
+    -- Create notification
+    INSERT INTO notifications (user_id, type, actor_id, title, body, link)
+    VALUES (
+        NEW.following_id,
+        'follow',
+        NEW.follower_id,
+        'New Follower',
+        follower_name || ' started following you',
+        '/app/profile/' || NEW.follower_id
+    );
+    
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS notify_follow ON follows;
+CREATE TRIGGER notify_follow
+    AFTER INSERT ON follows
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_on_follow();
