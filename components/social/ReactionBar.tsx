@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Post, ReactionType } from '@/types/social'
 import { useToggleReaction } from '@/lib/hooks/useReactions'
 import { useSavePost, useUnsavePost } from '@/lib/hooks/usePosts'
@@ -19,6 +20,9 @@ const reactions: { type: ReactionType; icon: string; label: string }[] = [
 
 export function ReactionBar({ post }: ReactionBarProps) {
     const [showPicker, setShowPicker] = useState(false)
+    const [showShareMenu, setShowShareMenu] = useState(false)
+    const [copied, setCopied] = useState(false)
+    const router = useRouter()
     const toggleReaction = useToggleReaction()
     const savePost = useSavePost()
     const unsavePost = useUnsavePost()
@@ -40,14 +44,53 @@ export function ReactionBar({ post }: ReactionBarProps) {
         }
     }
 
+    const handleComment = () => {
+        router.push(`/app/post/${post.id}#comments`)
+    }
+
+    const handleShare = async () => {
+        const url = `${window.location.origin}/app/post/${post.id}`
+
+        // Try native share first (mobile)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `Post by ${post.author_name}`,
+                    text: post.content.slice(0, 100),
+                    url: url,
+                })
+                return
+            } catch (err) {
+                // User cancelled or share failed, show menu
+            }
+        }
+
+        // Fallback to copy link
+        setShowShareMenu(!showShareMenu)
+    }
+
+    const copyLink = async () => {
+        const url = `${window.location.origin}/app/post/${post.id}`
+        await navigator.clipboard.writeText(url)
+        setCopied(true)
+        setTimeout(() => {
+            setCopied(false)
+            setShowShareMenu(false)
+        }, 2000)
+    }
+
     const currentReaction = reactions.find((r) => r.type === post.user_reaction)
 
     return (
-        <div className="flex items-center justify-between">
-            {/* Reaction Counts */}
-            <div className="flex items-center gap-4 text-sm text-muted">
+        <div>
+            {/* Counts Row */}
+            <div className="flex items-center justify-between mb-3 text-sm text-muted">
+                {/* Reaction Counts */}
                 {post.total_reactions > 0 && (
-                    <div className="flex items-center gap-1">
+                    <button
+                        className="flex items-center gap-2 hover:underline cursor-pointer"
+                        onClick={() => router.push(`/app/post/${post.id}`)}
+                    >
                         <div className="flex -space-x-1">
                             {post.like_count > 0 && <span className="text-base">👍</span>}
                             {post.celebrate_count > 0 && <span className="text-base">🎉</span>}
@@ -55,25 +98,40 @@ export function ReactionBar({ post }: ReactionBarProps) {
                             {post.love_count > 0 && <span className="text-base">❤️</span>}
                             {post.insightful_count > 0 && <span className="text-base">💡</span>}
                         </div>
-                        <span>{post.total_reactions}</span>
-                    </div>
+                        <span>{post.total_reactions} {post.total_reactions === 1 ? 'reaction' : 'reactions'}</span>
+                    </button>
                 )}
+
+                {/* Comment and Save Counts */}
+                <div className="flex items-center gap-4">
+                    {post.comment_count > 0 && (
+                        <button
+                            onClick={handleComment}
+                            className="hover:underline cursor-pointer"
+                        >
+                            {post.comment_count} {post.comment_count === 1 ? 'comment' : 'comments'}
+                        </button>
+                    )}
+                    {post.save_count > 0 && (
+                        <span>{post.save_count} {post.save_count === 1 ? 'save' : 'saves'}</span>
+                    )}
+                </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-2 border-t border-border">
                 {/* Reaction Button */}
-                <div className="relative">
+                <div className="relative flex-1">
                     <button
                         onClick={() => setShowPicker(!showPicker)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${currentReaction
+                        className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${currentReaction
                                 ? 'bg-primary bg-opacity-10 text-primary'
                                 : 'hover:bg-background text-muted hover:text-primary'
                             }`}
                     >
                         <span className="text-lg">{currentReaction?.icon || '👍'}</span>
                         <span className="text-sm font-medium">
-                            {currentReaction?.label || 'React'}
+                            {currentReaction?.label || 'Like'}
                         </span>
                     </button>
 
@@ -95,7 +153,10 @@ export function ReactionBar({ post }: ReactionBarProps) {
                 </div>
 
                 {/* Comment Button */}
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-background text-muted hover:text-primary transition-colors">
+                <button
+                    onClick={handleComment}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg hover:bg-background text-muted hover:text-primary transition-colors"
+                >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
@@ -105,8 +166,8 @@ export function ReactionBar({ post }: ReactionBarProps) {
                 {/* Save Button */}
                 <button
                     onClick={handleSave}
-                    className={`p-2 rounded-lg transition-colors ${post.is_saved
-                            ? 'text-primary'
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${post.is_saved
+                            ? 'text-primary bg-primary bg-opacity-10'
                             : 'text-muted hover:text-primary hover:bg-background'
                         }`}
                     title={post.is_saved ? 'Unsave' : 'Save'}
@@ -114,14 +175,37 @@ export function ReactionBar({ post }: ReactionBarProps) {
                     <svg className="w-5 h-5" fill={post.is_saved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                     </svg>
+                    <span className="text-sm font-medium">Save</span>
                 </button>
 
                 {/* Share Button */}
-                <button className="p-2 rounded-lg hover:bg-background text-muted hover:text-primary transition-colors" title="Share">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                </button>
+                <div className="relative flex-1">
+                    <button
+                        onClick={handleShare}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg hover:bg-background text-muted hover:text-primary transition-colors"
+                        title="Share"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                        <span className="text-sm font-medium">Share</span>
+                    </button>
+
+                    {/* Share Menu */}
+                    {showShareMenu && (
+                        <div className="absolute bottom-full right-0 mb-2 bg-surface border border-border rounded-lg shadow-lg py-2 z-10 min-w-[200px]">
+                            <button
+                                onClick={copyLink}
+                                className="w-full px-4 py-2 text-left hover:bg-background transition-colors flex items-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                <span>{copied ? 'Copied!' : 'Copy link'}</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )
