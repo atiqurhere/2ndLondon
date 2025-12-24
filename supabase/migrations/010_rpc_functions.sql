@@ -145,7 +145,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- GET POST DETAIL
 -- ============================================
 
-CREATE OR REPLACE FUNCTION get_post_detail(post_id UUID)
+CREATE OR REPLACE FUNCTION get_post_detail(target_post_id UUID)
 RETURNS TABLE (
     id UUID,
     author_id UUID,
@@ -200,7 +200,7 @@ BEGIN
     LEFT JOIN post_reaction_counts prc ON prc.post_id = p.id
     LEFT JOIN comments c ON c.post_id = p.id AND c.is_deleted = FALSE
     LEFT JOIN post_reactions pr_user ON pr_user.post_id = p.id AND pr_user.user_id = auth.uid()
-    WHERE p.id = post_id AND p.is_deleted = FALSE
+    WHERE p.id = target_post_id AND p.is_deleted = FALSE
     GROUP BY p.id, pr.id, prc.post_id, pr_user.reaction_type;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

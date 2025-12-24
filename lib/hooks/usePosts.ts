@@ -57,7 +57,7 @@ export function usePost(postId: string) {
         queryKey: ['post', postId],
         queryFn: async () => {
             const { data, error } = await (supabase.rpc as any)('get_post_detail', {
-                post_id: postId,
+                target_post_id: postId,
             })
 
             if (error) throw error
