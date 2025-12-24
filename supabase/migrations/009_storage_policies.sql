@@ -17,12 +17,14 @@
 -- ============================================
 
 -- Public read access for post attachments (shareable posts)
+DROP POLICY IF EXISTS "Public read access to post attachments" ON storage.objects;
 CREATE POLICY "Public read access to post attachments"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'post_attachments');
 
 -- Authenticated users can upload to their own folder
+DROP POLICY IF EXISTS "Authenticated users can upload post attachments" ON storage.objects;
 CREATE POLICY "Authenticated users can upload post attachments"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -33,6 +35,7 @@ WITH CHECK (
 );
 
 -- Users can update their own files
+DROP POLICY IF EXISTS "Users can update own post attachments" ON storage.objects;
 CREATE POLICY "Users can update own post attachments"
 ON storage.objects FOR UPDATE
 TO authenticated
@@ -42,6 +45,7 @@ USING (
 );
 
 -- Users can delete their own files
+DROP POLICY IF EXISTS "Users can delete own post attachments" ON storage.objects;
 CREATE POLICY "Users can delete own post attachments"
 ON storage.objects FOR DELETE
 TO authenticated
