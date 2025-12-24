@@ -5,6 +5,30 @@
 -- Run this BEFORE running migrations 001-011
 -- ============================================
 
+-- Drop all triggers FIRST (before tables)
+DROP TRIGGER IF EXISTS on_application_status_updated ON applications;
+DROP TRIGGER IF EXISTS on_application_created ON applications;
+DROP TRIGGER IF EXISTS update_post_reaction_counts_trigger ON post_reactions;
+DROP TRIGGER IF EXISTS update_comment_count_trigger ON comments;
+
+-- Drop all functions
+DROP FUNCTION IF EXISTS notify_on_application_status_change() CASCADE;
+DROP FUNCTION IF EXISTS notify_on_application() CASCADE;
+DROP FUNCTION IF EXISTS update_post_reaction_counts() CASCADE;
+DROP FUNCTION IF EXISTS update_comment_count() CASCADE;
+DROP FUNCTION IF EXISTS get_post_detail(uuid) CASCADE;
+DROP FUNCTION IF EXISTS get_feed_posts(int, int) CASCADE;
+DROP FUNCTION IF EXISTS get_user_posts(uuid, int, int) CASCADE;
+DROP FUNCTION IF EXISTS get_saved_posts(int, int) CASCADE;
+DROP FUNCTION IF EXISTS get_feed(double precision, double precision, text, int, int, boolean) CASCADE;
+DROP FUNCTION IF EXISTS get_distance_band(double precision, double precision, double precision, double precision) CASCADE;
+DROP FUNCTION IF EXISTS can_create_moment(uuid) CASCADE;
+DROP FUNCTION IF EXISTS can_apply(uuid) CASCADE;
+
+-- Drop all views
+DROP VIEW IF EXISTS public_moments CASCADE;
+DROP VIEW IF EXISTS post_comment_counts CASCADE;
+
 -- Drop all tables in reverse order (respecting foreign keys)
 DROP TABLE IF EXISTS reports CASCADE;
 DROP TABLE IF EXISTS blocks CASCADE;
@@ -23,30 +47,6 @@ DROP TABLE IF EXISTS conversations CASCADE;
 DROP TABLE IF EXISTS applications CASCADE;
 DROP TABLE IF EXISTS moments CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
-
--- Drop all views
-DROP VIEW IF EXISTS public_moments CASCADE;
-DROP VIEW IF EXISTS post_comment_counts CASCADE;
-
--- Drop all functions
-DROP FUNCTION IF EXISTS notify_on_application_status_change() CASCADE;
-DROP FUNCTION IF EXISTS notify_on_application() CASCADE;
-DROP FUNCTION IF EXISTS update_post_reaction_counts() CASCADE;
-DROP FUNCTION IF EXISTS update_comment_count() CASCADE;
-DROP FUNCTION IF EXISTS get_post_detail(uuid) CASCADE;
-DROP FUNCTION IF EXISTS get_feed_posts(int, int) CASCADE;
-DROP FUNCTION IF EXISTS get_user_posts(uuid, int, int) CASCADE;
-DROP FUNCTION IF EXISTS get_saved_posts(int, int) CASCADE;
-DROP FUNCTION IF EXISTS get_feed(double precision, double precision, text, int, int, boolean) CASCADE;
-DROP FUNCTION IF EXISTS get_distance_band(double precision, double precision, double precision, double precision) CASCADE;
-DROP FUNCTION IF EXISTS can_create_moment(uuid) CASCADE;
-DROP FUNCTION IF EXISTS can_apply(uuid) CASCADE;
-
--- Drop all triggers
-DROP TRIGGER IF EXISTS on_application_status_updated ON applications CASCADE;
-DROP TRIGGER IF EXISTS on_application_created ON applications CASCADE;
-DROP TRIGGER IF EXISTS update_post_reaction_counts_trigger ON post_reactions CASCADE;
-DROP TRIGGER IF EXISTS update_comment_count_trigger ON comments CASCADE;
 
 -- ============================================
 -- RESET COMPLETE

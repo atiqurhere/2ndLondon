@@ -5,8 +5,6 @@ ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
@@ -150,56 +148,6 @@ CREATE POLICY "Participants can create reviews"
       AND (conversations.creator_id = auth.uid() OR conversations.other_id = auth.uid())
     )
   );
-
--- Reports policies
--- Users can read their own reports
-CREATE POLICY "Users can view own reports"
-  ON reports FOR SELECT
-  USING (auth.uid() = reporter_id);
-
--- Admins can view all reports
-CREATE POLICY "Admins can view all reports"
-  ON reports FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM roles
-      WHERE roles.user_id = auth.uid()
-      AND roles.role = 'admin'
-    )
-  );
-
--- Authenticated users can create reports
-CREATE POLICY "Users can create reports"
-  ON reports FOR INSERT
-  WITH CHECK (auth.uid() = reporter_id);
-
--- Admins can update reports
-CREATE POLICY "Admins can update reports"
-  ON reports FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM roles
-      WHERE roles.user_id = auth.uid()
-      AND roles.role = 'admin'
-    )
-  );
-
--- Notifications policies
--- Users can read their own notifications
-CREATE POLICY "Users can view own notifications"
-  ON notifications FOR SELECT
-  USING (auth.uid() = user_id);
-
--- Users can update their own notifications (mark as read)
-CREATE POLICY "Users can update own notifications"
-  ON notifications FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- System can create notifications
-CREATE POLICY "System can create notifications"
-  ON notifications FOR INSERT
-  WITH CHECK (true);
 
 -- Roles policies
 -- Users can view their own role
