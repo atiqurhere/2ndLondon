@@ -144,6 +144,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                 </div>
                             )}
                         </div>
+                    </div>
                 </header>
 
                 {/* Page Content - Scrollable independently */}
