@@ -55,7 +55,7 @@ export default function SavedPostsPage() {
             {savedPosts && savedPosts.length > 0 ? (
                 <div className="space-y-4">
                     {savedPosts.map((save: any) => (
-                        <PostCard key={save.post.id} post={save.post} />
+                        <PostCard key={save.posts.id} post={save.posts} />
                     ))}
                 </div>
             ) : (
