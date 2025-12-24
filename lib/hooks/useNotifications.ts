@@ -14,8 +14,8 @@ export function useNotifications() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { data, error } = await supabase
-                .from('notifications')
+            const { data, error } = await (supabase
+                .from('notifications') as any)
                 .select(`
                     *,
                     actor:actor_id(
@@ -43,8 +43,8 @@ export function useUnreadNotificationCount() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) return 0
 
-            const { count, error } = await supabase
-                .from('notifications')
+            const { count, error } = await (supabase
+                .from('notifications') as any)
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', user.user.id)
                 .eq('read', false)
@@ -61,8 +61,8 @@ export function useMarkNotificationRead() {
 
     return useMutation({
         mutationFn: async (notificationId: string) => {
-            const { error } = await supabase
-                .from('notifications')
+            const { error } = await (supabase
+                .from('notifications') as any)
                 .update({ read: true })
                 .eq('id', notificationId)
 
@@ -83,8 +83,8 @@ export function useMarkAllNotificationsRead() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase
-                .from('notifications')
+            const { error } = await (supabase
+                .from('notifications') as any)
                 .update({ read: true })
                 .eq('user_id', user.user.id)
                 .eq('read', false)
@@ -109,8 +109,8 @@ export function useBlockedUsers() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { data, error } = await supabase
-                .from('blocks')
+            const { data, error } = await (supabase
+                .from('blocks') as any)
                 .select(`
                     *,
                     blocked_user:blocked_user_id(
@@ -136,8 +136,8 @@ export function useIsBlocked(userId: string) {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) return false
 
-            const { data, error } = await supabase
-                .from('blocks')
+            const { data, error } = await (supabase
+                .from('blocks') as any)
                 .select('id')
                 .eq('user_id', user.user.id)
                 .eq('blocked_user_id', userId)
@@ -158,8 +158,8 @@ export function useBlockUser() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase
-                .from('blocks')
+            const { error } = await (supabase
+                .from('blocks') as any)
                 .insert({
                     user_id: user.user.id,
                     blocked_user_id: userId,
@@ -183,8 +183,8 @@ export function useUnblockUser() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase
-                .from('blocks')
+            const { error } = await (supabase
+                .from('blocks') as any)
                 .delete()
                 .eq('user_id', user.user.id)
                 .eq('blocked_user_id', userId)
@@ -209,8 +209,8 @@ export function useMyReports() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { data, error } = await supabase
-                .from('reports')
+            const { data, error } = await (supabase
+                .from('reports') as any)
                 .select(`
                     *,
                     reported_user:reported_user_id(
@@ -249,7 +249,7 @@ export function useReportUser() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase.from('reports').insert({
+            const { error } = await (supabase.from('reports') as any).insert({
                 reporter_id: user.user.id,
                 reported_user_id: userId,
                 category,
@@ -280,7 +280,7 @@ export function useReportMoment() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('Not authenticated')
 
-            const { error } = await supabase.from('reports').insert({
+            const { error } = await (supabase.from('reports') as any).insert({
                 reporter_id: user.user.id,
                 reported_moment_id: momentId,
                 category,
