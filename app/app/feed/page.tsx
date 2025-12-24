@@ -6,7 +6,10 @@ import { useState, useEffect } from 'react'
 
 export default function FeedPage() {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
-    const { data: moments, isLoading } = useFeed('nearby', userLocation?.lat, userLocation?.lng)
+    const { data: moments, isLoading, error } = useFeed('nearby', userLocation?.lat, userLocation?.lng)
+
+    // Debug logging
+    console.log('Feed Debug:', { moments, isLoading, error, momentsLength: moments?.length })
 
     useEffect(() => {
         // Try to get user location
@@ -24,6 +27,15 @@ export default function FeedPage() {
             )
         }
     }, [])
+
+    if (error) {
+        return (
+            <div className="max-w-2xl mx-auto px-4 py-8 text-center">
+                <h1 className="text-2xl font-bold mb-4 text-error">Error Loading Moments</h1>
+                <p className="text-muted">{error.message}</p>
+            </div>
+        )
+    }
 
     return (
         <div className="max-w-2xl mx-auto px-4 py-6">
@@ -43,7 +55,7 @@ export default function FeedPage() {
                 </div>
             )}
 
-            {moments && moments.length === 0 && (
+            {!isLoading && moments && moments.length === 0 && (
                 <div className="text-center py-12">
                     <p className="text-muted text-lg mb-4">No active moments nearby</p>
                     <p className="text-muted text-sm">Be the first to create one!</p>
