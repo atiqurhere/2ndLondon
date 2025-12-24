@@ -189,3 +189,31 @@ export function useUpdateApplication() {
         },
     })
 }
+
+// ============================================
+// MY MOMENTS HOOKS
+// ============================================
+
+export function useMyMoments() {
+    const supabase = createClient()
+
+    return useQuery({
+        queryKey: ['my-moments'],
+        queryFn: async () => {
+            const { data: user } = await supabase.auth.getUser()
+            if (!user.user) throw new Error('Not authenticated')
+
+            const { data, error } = await supabase
+                .from('moments')
+                .select(`
+                    *,
+                    applications(count)
+                `)
+                .eq('creator_id', user.user.id)
+                .order('created_at', { ascending: false })
+
+            if (error) throw error
+            return data
+        },
+    })
+}

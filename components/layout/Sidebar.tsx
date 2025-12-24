@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils/helpers'
 const navItems = [
     { href: '/app/social', label: 'Social Feed', icon: '📱' },
     { href: '/app/feed', label: 'Nearby', icon: '📍' },
+    { href: '/app/my-moments', label: 'My Moments', icon: '📋' },
     { href: '/app/ending-soon', label: 'Ending Soon', icon: '⏰' },
     { href: '/app/verified', label: 'Verified', icon: '✓' },
     { href: '/app/free', label: 'Free', icon: '🎁' },
